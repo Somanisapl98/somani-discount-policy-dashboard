@@ -1,11 +1,11 @@
 {
   "source": "OT DT - 12.10.2026.xlsx",
-  "updated": "2026-10-13T12:45:16",
+  "updated": "2026-10-13T12:45:45",
   "today": "2026-10-13",
   "invoice_count": 6922,
-  "party_count": 804,
+  "party_count": 794,
   "excluded_prefix_rows": 1068,
   "mintify_parties": 44,
-  "non_mintify_parties": 760,
+  "non_mintify_parties": 750,
   "total_pending": 209361337.26
 }
