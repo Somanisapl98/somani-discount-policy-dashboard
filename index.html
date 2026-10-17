@@ -396,4 +396,33 @@
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+</script><script id="adminUniqueExportV28">
+(function(){
+ function n(v){v=Number(v);return Number.isFinite(v)?v:0}
+ function age(p){return n(p.oldest_age??p.oldest??p.policy_age??p.ageing??p.age??p.max_age??0)}
+ function mint(p){return String(p.type||p.customer_type||'').trim().toLowerCase()==='mintify'}
+ function code(p){const a=age(p);if(mint(p)){if(a<=25)return'J';if(a<=45)return'D';if(a<=70)return'H';if(a<=100)return'C';return'E'}if(a<=25)return'B';if(a<=70)return'H';if(a<=100)return'C';return'E'}
+ function money(v){return Math.round(n(v)*100)/100}
+ function visibleNames(){const out=[];document.querySelectorAll('.party').forEach(c=>{if(getComputedStyle(c).display==='none')return;const t=c.querySelector('.pname')||c.querySelector('summary b')||c.querySelector('b');if(!t)return;const tx=t.childNodes[0]?.textContent?.trim()||t.textContent.trim();const key=Object.keys(P||{}).find(k=>tx.toUpperCase().includes(k.toUpperCase().slice(0,15)));if(key&&!out.includes(key))out.push(key)});return out}
+ function rows(){const names=visibleNames();return names.map(name=>{const p=P[name]||{};return {
+  'Party Name':name,
+  'ID':[...(p.codes||[]),p.mintify_id,p.code].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / '),
+  'Customer Type':p.type||p.customer_type||'',
+  'Type':code(p),
+  'Salesman':p.salesman||'Unassigned',
+  'Policy Ageing Days':age(p),
+  'Policy Slab':p.slab??p.current_slab??'',
+  'Movement':p.movement||'',
+  'Policy Bill Count':n(p.policy_bill_count??p.bill_count??(p.invoices||[]).filter(x=>x.bill_category==='Policy Bill'||x.policy).length),
+  'Total DR':money(p.total_dr??p.dr??p.debit_total),
+  'Total CR':money(p.total_cr??p.cr??p.credit_total),
+  'Net Outstanding':money(p.remaining??p.net??p.net_outstanding),
+  'Remaining Side':p.remaining_side||p.side||''
+ }})}
+ function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
+ function csv(){const data=rows();if(!data.length)return alert('No visible parties to export.');const heads=Object.keys(data[0]);const text='\ufeff'+[heads.map(csvCell).join(','),...data.map(r=>heads.map(h=>csvCell(r[h])).join(','))].join('\r\n');const b=new Blob([text],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Somani_Party_Summary_With_Type.csv';a.click();URL.revokeObjectURL(a.href)}
+ function xlsx(){const data=rows();if(!data.length)return alert('No visible parties to export.');if(typeof XLSX==='undefined')return csv();const ws=XLSX.utils.json_to_sheet(data);ws['!cols']=Object.keys(data[0]).map(h=>({wch:Math.max(12,Math.min(34,h.length+5))}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Party Summary');XLSX.writeFile(wb,'Somani_Party_Summary_With_Type.xlsx')}
+ function init(){document.querySelectorAll('button,a').forEach(b=>{const t=(b.textContent||'').trim().toLowerCase();if(t.includes('export filtered xlsx')){b.onclick=e=>{e.preventDefault();e.stopImmediatePropagation();xlsx()}}else if(t.includes('export filtered csv')){b.onclick=e=>{e.preventDefault();e.stopImmediatePropagation();csv()}}})}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();setTimeout(init,500)
+})();
 </script></body></html>
