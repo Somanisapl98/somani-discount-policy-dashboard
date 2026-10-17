@@ -1,14 +1,14 @@
 {
-  "source": "OT DT - 15.10.26.xlsx",
+  "source": "OT DT - 16.10.2026.xlsx",
   "previous_source": "OT DT - 15.10.26.xlsx",
   "comparison_from": "OT DT - 15.10.26.xlsx",
-  "comparison_to": "OT DT - 15.10.26.xlsx",
-  "updated": "2026-10-17T10:30:10",
+  "comparison_to": "OT DT - 16.10.2026.xlsx",
+  "updated": "2026-10-17T13:22:47",
   "today": "2026-10-17",
-  "invoice_count": 6666,
-  "party_count": 796,
-  "excluded_prefix_rows": 1025,
-  "mintify_parties": 42,
-  "non_mintify_parties": 754,
-  "total_pending": 189013258.85
+  "invoice_count": 6451,
+  "party_count": 802,
+  "excluded_prefix_rows": 1004,
+  "mintify_parties": 43,
+  "non_mintify_parties": 759,
+  "total_pending": 183988629.55
 }
