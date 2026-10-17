@@ -195,6 +195,9 @@
 /* ADMIN V26B */
 .salesmanLine{display:block;color:#526174;font-weight:500;margin-top:3px}.policyToggleV26B{display:none}
 @media(max-width:760px){.policyToggleV26B{display:block;width:100%;border:0;border-radius:9px;background:#fff3c7;color:#123f78;padding:10px 12px;margin:0 0 8px;font-weight:800;text-align:left}.adminPolicyV26B{display:none!important}.adminPolicyV26B.policyOpen{display:block!important}}
+
+/* ADMIN V27 TYPE CODE */
+.typeCodeV27{display:block;color:#6b21a8;font-weight:800;margin-top:3px}
 </style><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script><style id="adminV24Style">
 @media (max-width:760px){
  body.adminV24 .adminV24FilterRow{display:flex!important;flex-flow:row nowrap!important;align-items:flex-end!important;gap:8px!important;position:relative!important;inset:auto!important;width:100%!important;max-width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;overflow-x:auto!important;overflow-y:hidden!important;padding:8px!important;margin:0 0 8px!important;background:#fff!important;border:1px solid #d7e0ec!important;border-radius:10px!important;box-shadow:none!important;scroll-snap-type:x mandatory!important;-webkit-overflow-scrolling:touch!important}
@@ -343,4 +346,54 @@
 })();
 </script><script id="adminV26BPolicyToggle">
 (function(){function init(){if(innerWidth>760)return;const head=[...document.querySelectorAll('h2,h3')].find(x=>/Policy Slabs/i.test(x.textContent));if(!head)return;const panel=head.closest('.panel,aside,section,div');if(!panel||document.getElementById('policyToggleV26B'))return;panel.classList.add('adminPolicyV26B');const b=document.createElement('button');b.id='policyToggleV26B';b.className='policyToggleV26B';b.type='button';b.textContent='Policy Slabs दिखाएं ▼';panel.parentNode.insertBefore(b,panel);b.onclick=()=>{const open=panel.classList.toggle('policyOpen');b.textContent=open?'Policy Slabs छुपाएं ▲':'Policy Slabs दिखाएं ▼';};}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('resize',init);})();
+</script><script id="adminTypeCodeV27">
+(function(){
+ function num(v){const n=Number(v);return Number.isFinite(n)?n:0;}
+ function ageOf(p){return num(p.oldest_age??p.oldest??p.policy_age??p.ageing??p.age??p.max_age??0);}
+ function isMintify(p){return String(p.type||p.customer_type||'').trim().toLowerCase()==='mintify';}
+ function typeCode(p){
+   const a=ageOf(p);
+   if(isMintify(p)){
+     if(a<=25)return'J';
+     if(a<=45)return'D';
+     if(a<=70)return'H';
+     if(a<=100)return'C';
+     return'E';
+   }
+   if(a<=25)return'B';
+   if(a<=70)return'H';
+   if(a<=100)return'C';
+   return'E';
+ }
+ function decorate(){
+   if(typeof P==='object'&&P)Object.values(P).forEach(p=>p.type_code=typeCode(p));
+   document.querySelectorAll('.party').forEach(card=>{
+     const title=card.querySelector('.pname')||card.querySelector('summary b')||card.querySelector('b');
+     if(!title||card.querySelector('.typeCodeV27'))return;
+     const text=(title.textContent||'').toUpperCase();
+     let found=null;
+     if(typeof P==='object'&&P){for(const [name,p] of Object.entries(P)){if(text.includes(String(name).toUpperCase().slice(0,15))){found=p;break;}}}
+     const code=found?typeCode(found):'';
+     if(!code)return;
+     card.dataset.typeCode=code;
+     const line=document.createElement('small');line.className='typeCodeV27';line.textContent='Type: '+code;title.appendChild(line);
+   });
+   applyFilter();
+ }
+ function applyFilter(){
+   const f=document.getElementById('typecode');if(!f)return;
+   const v=f.value;document.querySelectorAll('.party').forEach(card=>{const ok=v==='All'||card.dataset.typeCode===v;if(!ok)card.style.display='none';else if((document.getElementById('salesman')?.value||'All')==='All'||!card.dataset.salesman||card.dataset.salesman===document.getElementById('salesman').value)card.style.display='';});
+ }
+ function init(){
+   const sort=document.getElementById('sort');if(!sort)return;
+   if(!document.getElementById('typecode')){
+     const wrap=document.createElement('div');wrap.innerHTML='<label>Type</label><select id="typecode"><option value="All">All Types</option><option>J</option><option>D</option><option>H</option><option>C</option><option>E</option><option>B</option></select>';
+     sort.closest('div').parentNode.insertBefore(wrap,sort.closest('div'));
+   }
+   document.getElementById('typecode').addEventListener('change',applyFilter);
+   decorate();setTimeout(decorate,300);setTimeout(decorate,1000);
+   const list=document.querySelector('.list,#list,.parties');if(list)new MutationObserver(decorate).observe(list,{childList:true,subtree:true});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
 </script></body></html>
