@@ -396,33 +396,46 @@
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
-</script><script id="adminUniqueExportV28">
+</script><script id="adminExportRepairV28B">
 (function(){
- function n(v){v=Number(v);return Number.isFinite(v)?v:0}
- function age(p){return n(p.oldest_age??p.oldest??p.policy_age??p.ageing??p.age??p.max_age??0)}
- function mint(p){return String(p.type||p.customer_type||'').trim().toLowerCase()==='mintify'}
- function code(p){const a=age(p);if(mint(p)){if(a<=25)return'J';if(a<=45)return'D';if(a<=70)return'H';if(a<=100)return'C';return'E'}if(a<=25)return'B';if(a<=70)return'H';if(a<=100)return'C';return'E'}
- function money(v){return Math.round(n(v)*100)/100}
- function visibleNames(){const out=[];document.querySelectorAll('.party').forEach(c=>{if(getComputedStyle(c).display==='none')return;const t=c.querySelector('.pname')||c.querySelector('summary b')||c.querySelector('b');if(!t)return;const tx=t.childNodes[0]?.textContent?.trim()||t.textContent.trim();const key=Object.keys(P||{}).find(k=>tx.toUpperCase().includes(k.toUpperCase().slice(0,15)));if(key&&!out.includes(key))out.push(key)});return out}
- function rows(){const names=visibleNames();return names.map(name=>{const p=P[name]||{};return {
-  'Party Name':name,
-  'ID':[...(p.codes||[]),p.mintify_id,p.code].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / '),
-  'Customer Type':p.type||p.customer_type||'',
-  'Type':code(p),
-  'Salesman':p.salesman||'Unassigned',
-  'Policy Ageing Days':age(p),
-  'Policy Slab':p.slab??p.current_slab??'',
-  'Movement':p.movement||'',
-  'Policy Bill Count':n(p.policy_bill_count??p.bill_count??(p.invoices||[]).filter(x=>x.bill_category==='Policy Bill'||x.policy).length),
-  'Total DR':money(p.total_dr??p.dr??p.debit_total),
-  'Total CR':money(p.total_cr??p.cr??p.credit_total),
-  'Net Outstanding':money(p.remaining??p.net??p.net_outstanding),
-  'Remaining Side':p.remaining_side||p.side||''
- }})}
+ function text(el){return (el?.textContent||'').replace(/\s+/g,' ').trim()}
+ function money(v){const m=String(v||'').replace(/[^0-9.-]/g,'');return Number(m)||0}
+ function findValue(card,label){
+   const all=[...card.querySelectorAll('*')];
+   const el=all.find(x=>text(x).toUpperCase().startsWith(label.toUpperCase()));
+   if(!el)return'';
+   return text(el).replace(new RegExp('^'+label+'\\s*:?','i'),'').trim();
+ }
+ function partyCards(){return [...document.querySelectorAll('.party')].filter(c=>getComputedStyle(c).display!=='none')}
+ function getRows(){
+   const seen=new Set(),rows=[];
+   partyCards().forEach(card=>{
+     const title=card.querySelector('.pname')||card.querySelector('summary b')||card.querySelector('b');
+     const raw=text(title).replace(/Salesman\s*:.*$/i,'').replace(/Type\s*:\s*[A-Z].*$/i,'').trim();
+     if(!raw)return;
+     const key=raw.toUpperCase();if(seen.has(key))return;seen.add(key);
+     const whole=text(card);
+     const type=(whole.match(/\bType\s*:\s*([JDHCEB])\b/i)||[])[1]||card.dataset.typeCode||'';
+     const salesman=(whole.match(/Salesman\s*:\s*([^|]+?)(?=\s+(?:TOTAL|POLICY|CURRENT|ID|Type:)|$)/i)||[])[1]||card.dataset.salesman||'Unassigned';
+     const cust=(whole.match(/\b(Mintify|Non-Mintify)\b/i)||[])[1]||'';
+     const age=(whole.match(/POLICY\s+DR\s+AGE\s*([0-9]+)\s*days/i)||whole.match(/Policy\s+Ageing\s*:?\s*([0-9]+)/i)||[])[1]||'';
+     const slab=(whole.match(/Current\s+slab\s*([0-9]+)/i)||[])[1]||'';
+     const movement=(whole.match(/(No change \(Slab [0-9]+\)|Slab [0-9]+\s*[→>-]+\s*Slab [0-9]+|No bills|No new comparison)/i)||[])[1]||'';
+     const id=(whole.match(/\bID\s+([^\n]+?)(?=\s+(?:TOTAL|POLICY|CURRENT|Salesman|Type:)|$)/i)||[])[1]||'';
+     const dr=(whole.match(/TOTAL\s+DR\s*₹?\s*([0-9,.-]+)/i)||[])[1]||'';
+     const cr=(whole.match(/TOTAL\s+CR\s*₹?\s*([0-9,.-]+)/i)||[])[1]||'';
+     const rem=(whole.match(/REMAINING\s*₹?\s*([0-9,.-]+)\s*(DR|CR)?/i)||[]);
+     rows.push({'Party Name':raw,'ID':id.trim(),'Customer Type':cust,'Type':type.toUpperCase(),'Salesman':salesman.trim(),'Policy Ageing Days':age,'Policy Slab':slab,'Movement':movement,'Total DR':money(dr),'Total CR':money(cr),'Net Outstanding':money(rem[1]),'Remaining Side':rem[2]||''});
+   });
+   return rows;
+ }
  function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
- function csv(){const data=rows();if(!data.length)return alert('No visible parties to export.');const heads=Object.keys(data[0]);const text='\ufeff'+[heads.map(csvCell).join(','),...data.map(r=>heads.map(h=>csvCell(r[h])).join(','))].join('\r\n');const b=new Blob([text],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Somani_Party_Summary_With_Type.csv';a.click();URL.revokeObjectURL(a.href)}
- function xlsx(){const data=rows();if(!data.length)return alert('No visible parties to export.');if(typeof XLSX==='undefined')return csv();const ws=XLSX.utils.json_to_sheet(data);ws['!cols']=Object.keys(data[0]).map(h=>({wch:Math.max(12,Math.min(34,h.length+5))}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Party Summary');XLSX.writeFile(wb,'Somani_Party_Summary_With_Type.xlsx')}
- function init(){document.querySelectorAll('button,a').forEach(b=>{const t=(b.textContent||'').trim().toLowerCase();if(t.includes('export filtered xlsx')){b.onclick=e=>{e.preventDefault();e.stopImmediatePropagation();xlsx()}}else if(t.includes('export filtered csv')){b.onclick=e=>{e.preventDefault();e.stopImmediatePropagation();csv()}}})}
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();setTimeout(init,500)
+ function downloadCsv(rows){const h=Object.keys(rows[0]);const data='\ufeff'+[h.map(csvCell).join(','),...rows.map(r=>h.map(k=>csvCell(r[k])).join(','))].join('\r\n');save(new Blob([data],{type:'text/csv;charset=utf-8'}),'Somani_Party_Summary_With_Type.csv')}
+ function downloadExcel(rows){
+   if(window.XLSX?.utils){const ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=Object.keys(rows[0]).map(k=>({wch:Math.max(12,Math.min(34,k.length+5))}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Party Summary');XLSX.writeFile(wb,'Somani_Party_Summary_With_Type.xlsx');return;}
+   const h=Object.keys(rows[0]);const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');const table='<table><tr>'+h.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr>'+rows.map(r=>'<tr>'+h.map(k=>'<td>'+esc(r[k])+'</td>').join('')+'</tr>').join('')+'</table>';save(new Blob(['\ufeff<html><head><meta charset="utf-8"></head><body>'+table+'</body></html>'],{type:'application/vnd.ms-excel'}),'Somani_Party_Summary_With_Type.xls')
+ }
+ function save(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+ document.addEventListener('click',function(e){const b=e.target.closest('button,a');if(!b)return;const t=text(b).toLowerCase();if(!t.includes('export filtered'))return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();const rows=getRows();if(!rows.length){alert('No visible parties to export.');return}if(t.includes('csv'))downloadCsv(rows);else downloadExcel(rows)},true);
 })();
 </script></body></html>
