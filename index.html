@@ -196,8 +196,9 @@
 .salesmanLine{display:block;color:#526174;font-weight:500;margin-top:3px}.policyToggleV26B{display:none}
 @media(max-width:760px){.policyToggleV26B{display:block;width:100%;border:0;border-radius:9px;background:#fff3c7;color:#123f78;padding:10px 12px;margin:0 0 8px;font-weight:800;text-align:left}.adminPolicyV26B{display:none!important}.adminPolicyV26B.policyOpen{display:block!important}}
 
-/* ADMIN V27 TYPE CODE */
-.typeCodeV27{display:block;color:#6b21a8;font-weight:800;margin-top:3px}
+
+/* ADMIN V29 CLEAN TYPE */
+.typeCodeV29{display:block;color:#6b21a8;font-weight:800;margin-top:3px}
 </style><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script><style id="adminV24Style">
 @media (max-width:760px){
  body.adminV24 .adminV24FilterRow{display:flex!important;flex-flow:row nowrap!important;align-items:flex-end!important;gap:8px!important;position:relative!important;inset:auto!important;width:100%!important;max-width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;overflow-x:auto!important;overflow-y:hidden!important;padding:8px!important;margin:0 0 8px!important;background:#fff!important;border:1px solid #d7e0ec!important;border-radius:10px!important;box-shadow:none!important;scroll-snap-type:x mandatory!important;-webkit-overflow-scrolling:touch!important}
@@ -346,96 +347,42 @@
 })();
 </script><script id="adminV26BPolicyToggle">
 (function(){function init(){if(innerWidth>760)return;const head=[...document.querySelectorAll('h2,h3')].find(x=>/Policy Slabs/i.test(x.textContent));if(!head)return;const panel=head.closest('.panel,aside,section,div');if(!panel||document.getElementById('policyToggleV26B'))return;panel.classList.add('adminPolicyV26B');const b=document.createElement('button');b.id='policyToggleV26B';b.className='policyToggleV26B';b.type='button';b.textContent='Policy Slabs दिखाएं ▼';panel.parentNode.insertBefore(b,panel);b.onclick=()=>{const open=panel.classList.toggle('policyOpen');b.textContent=open?'Policy Slabs छुपाएं ▲':'Policy Slabs दिखाएं ▼';};}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('resize',init);})();
-</script><script id="adminTypeCodeV27">
+</script><script id="adminCleanTypeExportV29">
 (function(){
- function num(v){const n=Number(v);return Number.isFinite(n)?n:0;}
- function ageOf(p){return num(p.oldest_age??p.oldest??p.policy_age??p.ageing??p.age??p.max_age??0);}
- function isMintify(p){return String(p.type||p.customer_type||'').trim().toLowerCase()==='mintify';}
- function typeCode(p){
-   const a=ageOf(p);
-   if(isMintify(p)){
-     if(a<=25)return'J';
-     if(a<=45)return'D';
-     if(a<=70)return'H';
-     if(a<=100)return'C';
-     return'E';
-   }
-   if(a<=25)return'B';
-   if(a<=70)return'H';
-   if(a<=100)return'C';
-   return'E';
+ const qs=(e,s)=>e?e.querySelector(s):null;
+ const txt=e=>(e?.textContent||'').replace(/\s+/g,' ').trim();
+ function header(card){return qs(card,'.party-head')||qs(card,'summary')||qs(card,'.party')||card.firstElementChild||card}
+ function facts(card){
+   const h=header(card), clone=h.cloneNode(true);
+   clone.querySelectorAll('.salesmanLine,.typeCodeV27,.typeCodeV29,table,.invoice,.invoices,details').forEach(x=>x.remove());
+   const ht=txt(clone), all=txt(card);
+   const customer=/\bNon-Mintify\b/i.test(ht)?'Non-Mintify':(/\bMintify\b/i.test(ht)?'Mintify':'');
+   let name=ht.split(/\bNon-Mintify\b|\bMintify\b/i)[0].trim().replace(/[|:-]+$/,'').trim();
+   if(!name){const b=qs(h,'b');name=txt(b).split(/\bNon-Mintify\b|\bMintify\b/i)[0].trim()}
+   const age=Number((all.match(/Policy\s+DR\s+Age\s*([0-9]+)\s*days/i)||all.match(/Policy\s+Ageing(?:\s+Days)?\s*:?\s*([0-9]+)/i)||[])[1]||0);
+   const slab=(all.match(/Current\s+slab\s*([0-9]+)/i)||[])[1]||'';
+   const movement=(all.match(/(No change \(Slab [0-9]+\)|Slab [0-9]+\s*(?:→|->|to)\s*Slab [0-9]+|No bills|No new comparison)/i)||[])[1]||'';
+   let id=''; const idm=ht.match(/(?:Non-Mintify|Mintify)\s*\|\s*(.+?)(?=\s+(?:Salesman|Type)\s*:|$)/i); if(idm)id=idm[1].trim();
+   if(!id){const m=all.match(/\bID\s*([^\n]+?)(?=\s+Invoice|\s+Total|$)/i);if(m)id=m[1].trim()}
+   let salesman=txt(qs(card,'.salesmanLine')).replace(/^Salesman\s*:\s*/i,'');
+   if(!salesman){const m=all.match(/Salesman\s*:\s*([^|]+?)(?=\s+(?:Total DR|Policy DR|Current slab|ID|Type:)|$)/i);salesman=m?m[1].trim():'Unassigned'}
+   const netm=all.match(/Remaining\s*₹?\s*([0-9,.-]+)\s*(DR|CR)?/i); const net=netm?Number(netm[1].replace(/,/g,'')):0;
+   return {card,name,id,customer,age,slab,movement,salesman,net,side:netm?.[2]||''}
  }
- function decorate(){
-   if(typeof P==='object'&&P)Object.values(P).forEach(p=>p.type_code=typeCode(p));
-   document.querySelectorAll('.party').forEach(card=>{
-     const title=card.querySelector('.pname')||card.querySelector('summary b')||card.querySelector('b');
-     if(!title||card.querySelector('.typeCodeV27'))return;
-     const text=(title.textContent||'').toUpperCase();
-     let found=null;
-     if(typeof P==='object'&&P){for(const [name,p] of Object.entries(P)){if(text.includes(String(name).toUpperCase().slice(0,15))){found=p;break;}}}
-     const code=found?typeCode(found):'';
-     if(!code)return;
-     card.dataset.typeCode=code;
-     const line=document.createElement('small');line.className='typeCodeV27';line.textContent='Type: '+code;title.appendChild(line);
-   });
-   applyFilter();
+ function typeOf(customer,age){
+   if(customer==='Mintify'){if(age<=25)return'J';if(age<=45)return'D';if(age<=70)return'H';if(age<=100)return'C';return'E'}
+   if(customer==='Non-Mintify'){if(age<=25)return'B';if(age<=70)return'H';if(age<=100)return'C';return'E'}
+   return'';
  }
- function applyFilter(){
-   const f=document.getElementById('typecode');if(!f)return;
-   const v=f.value;document.querySelectorAll('.party').forEach(card=>{const ok=v==='All'||card.dataset.typeCode===v;if(!ok)card.style.display='none';else if((document.getElementById('salesman')?.value||'All')==='All'||!card.dataset.salesman||card.dataset.salesman===document.getElementById('salesman').value)card.style.display='';});
- }
- function init(){
-   const sort=document.getElementById('sort');if(!sort)return;
-   if(!document.getElementById('typecode')){
-     const wrap=document.createElement('div');wrap.innerHTML='<label>Type</label><select id="typecode"><option value="All">All Types</option><option>J</option><option>D</option><option>H</option><option>C</option><option>E</option><option>B</option></select>';
-     sort.closest('div').parentNode.insertBefore(wrap,sort.closest('div'));
-   }
-   document.getElementById('typecode').addEventListener('change',applyFilter);
-   decorate();setTimeout(decorate,300);setTimeout(decorate,1000);
-   const list=document.querySelector('.list,#list,.parties');if(list)new MutationObserver(decorate).observe(list,{childList:true,subtree:true});
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-})();
-</script><script id="adminExportRepairV28B">
-(function(){
- function text(el){return (el?.textContent||'').replace(/\s+/g,' ').trim()}
- function money(v){const m=String(v||'').replace(/[^0-9.-]/g,'');return Number(m)||0}
- function findValue(card,label){
-   const all=[...card.querySelectorAll('*')];
-   const el=all.find(x=>text(x).toUpperCase().startsWith(label.toUpperCase()));
-   if(!el)return'';
-   return text(el).replace(new RegExp('^'+label+'\\s*:?','i'),'').trim();
- }
- function partyCards(){return [...document.querySelectorAll('.party')].filter(c=>getComputedStyle(c).display!=='none')}
- function getRows(){
-   const seen=new Set(),rows=[];
-   partyCards().forEach(card=>{
-     const title=card.querySelector('.pname')||card.querySelector('summary b')||card.querySelector('b');
-     const raw=text(title).replace(/Salesman\s*:.*$/i,'').replace(/Type\s*:\s*[A-Z].*$/i,'').trim();
-     if(!raw)return;
-     const key=raw.toUpperCase();if(seen.has(key))return;seen.add(key);
-     const whole=text(card);
-     const type=(whole.match(/\bType\s*:\s*([JDHCEB])\b/i)||[])[1]||card.dataset.typeCode||'';
-     const salesman=(whole.match(/Salesman\s*:\s*([^|]+?)(?=\s+(?:TOTAL|POLICY|CURRENT|ID|Type:)|$)/i)||[])[1]||card.dataset.salesman||'Unassigned';
-     const cust=(whole.match(/\b(Mintify|Non-Mintify)\b/i)||[])[1]||'';
-     const age=(whole.match(/POLICY\s+DR\s+AGE\s*([0-9]+)\s*days/i)||whole.match(/Policy\s+Ageing\s*:?\s*([0-9]+)/i)||[])[1]||'';
-     const slab=(whole.match(/Current\s+slab\s*([0-9]+)/i)||[])[1]||'';
-     const movement=(whole.match(/(No change \(Slab [0-9]+\)|Slab [0-9]+\s*[→>-]+\s*Slab [0-9]+|No bills|No new comparison)/i)||[])[1]||'';
-     const id=(whole.match(/\bID\s+([^\n]+?)(?=\s+(?:TOTAL|POLICY|CURRENT|Salesman|Type:)|$)/i)||[])[1]||'';
-     const dr=(whole.match(/TOTAL\s+DR\s*₹?\s*([0-9,.-]+)/i)||[])[1]||'';
-     const cr=(whole.match(/TOTAL\s+CR\s*₹?\s*([0-9,.-]+)/i)||[])[1]||'';
-     const rem=(whole.match(/REMAINING\s*₹?\s*([0-9,.-]+)\s*(DR|CR)?/i)||[]);
-     rows.push({'Party Name':raw,'ID':id.trim(),'Customer Type':cust,'Type':type.toUpperCase(),'Salesman':salesman.trim(),'Policy Ageing Days':age,'Policy Slab':slab,'Movement':movement,'Total DR':money(dr),'Total CR':money(cr),'Net Outstanding':money(rem[1]),'Remaining Side':rem[2]||''});
-   });
-   return rows;
- }
- function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
- function downloadCsv(rows){const h=Object.keys(rows[0]);const data='\ufeff'+[h.map(csvCell).join(','),...rows.map(r=>h.map(k=>csvCell(r[k])).join(','))].join('\r\n');save(new Blob([data],{type:'text/csv;charset=utf-8'}),'Somani_Party_Summary_With_Type.csv')}
- function downloadExcel(rows){
-   if(window.XLSX?.utils){const ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=Object.keys(rows[0]).map(k=>({wch:Math.max(12,Math.min(34,k.length+5))}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Party Summary');XLSX.writeFile(wb,'Somani_Party_Summary_With_Type.xlsx');return;}
-   const h=Object.keys(rows[0]);const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');const table='<table><tr>'+h.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr>'+rows.map(r=>'<tr>'+h.map(k=>'<td>'+esc(r[k])+'</td>').join('')+'</tr>').join('')+'</table>';save(new Blob(['\ufeff<html><head><meta charset="utf-8"></head><body>'+table+'</body></html>'],{type:'application/vnd.ms-excel'}),'Somani_Party_Summary_With_Type.xls')
- }
+ function decorate(){document.querySelectorAll('.party').forEach(card=>{const f=facts(card),code=typeOf(f.customer,f.age);card.dataset.typeCode=code;card.dataset.customerType=f.customer;let line=qs(card,'.typeCodeV29')||qs(card,'.typeCodeV27');if(!line){line=document.createElement('small');line.className='typeCodeV29';(qs(header(card),'b')||header(card)).appendChild(line)}line.className='typeCodeV29';line.textContent='Type: '+code});applyType()}
+ function applyType(){const s=document.getElementById('typecode');if(!s)return;const v=s.value;document.querySelectorAll('.party').forEach(c=>{if(v!=='All'&&c.dataset.typeCode!==v)c.style.display='none'})}
+ function rows(){const seen=new Set(),out=[];document.querySelectorAll('.party').forEach(card=>{if(getComputedStyle(card).display==='none')return;const f=facts(card),key=(f.id||f.name).toUpperCase();if(!key||seen.has(key))return;seen.add(key);out.push({'Party Name':f.name,'ID':f.id,'Customer Type':f.customer,'Type':typeOf(f.customer,f.age),'Salesman':f.salesman,'Policy Ageing Days':f.age,'Policy Slab':f.slab,'Movement':f.movement,'Net Outstanding':f.net,'DR / CR':f.side})});return out}
  function save(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
- document.addEventListener('click',function(e){const b=e.target.closest('button,a');if(!b)return;const t=text(b).toLowerCase();if(!t.includes('export filtered'))return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();const rows=getRows();if(!rows.length){alert('No visible parties to export.');return}if(t.includes('csv'))downloadCsv(rows);else downloadExcel(rows)},true);
+ const esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+ function csv(r){const h=Object.keys(r[0]);save(new Blob(['\ufeff'+[h.map(esc).join(','),...r.map(x=>h.map(k=>esc(x[k])).join(','))].join('\r\n')],{type:'text/csv;charset=utf-8'}),'Somani_Party_Summary_Clean_With_Type.csv')}
+ function excel(r){if(window.XLSX?.utils){const ws=XLSX.utils.json_to_sheet(r);ws['!cols']=Object.keys(r[0]).map(k=>({wch:Math.max(12,Math.min(32,k.length+6))}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Party Summary');XLSX.writeFile(wb,'Somani_Party_Summary_Clean_With_Type.xlsx')}else csv(r)}
+ function init(){decorate();const t=document.getElementById('typecode');if(t)t.addEventListener('change',()=>setTimeout(()=>{decorate();applyType()},0));setTimeout(decorate,400);setTimeout(decorate,1000)}
+ document.addEventListener('click',e=>{const b=e.target.closest('button,a');if(!b||!txt(b).toLowerCase().includes('export filtered'))return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();const r=rows();if(!r.length)return alert('No visible parties to export.');txt(b).toLowerCase().includes('csv')?csv(r):excel(r)},true);
+ document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
 })();
 </script></body></html>
