@@ -3,12 +3,12 @@
   "previous_source": "OT DT - 16.10.2026.xlsx",
   "comparison_from": "OT DT - 16.10.2026.xlsx",
   "comparison_to": "OT DT - 16.10.2026.xlsx",
-  "updated": "2026-10-18T10:30:09",
+  "updated": "2026-10-18T11:03:34",
   "today": "2026-10-18",
   "invoice_count": 6451,
   "party_count": 793,
   "excluded_prefix_rows": 1004,
-  "mintify_parties": 43,
-  "non_mintify_parties": 750,
+  "mintify_parties": 33,
+  "non_mintify_parties": 760,
   "total_pending": 183988629.55
 }
