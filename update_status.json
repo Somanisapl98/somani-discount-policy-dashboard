@@ -3,14 +3,14 @@
   "previous_source": "OT DT - 24.10.2026.xlsx",
   "comparison_from": "OT DT - 24.10.2026.xlsx",
   "comparison_to": "OT DT - 24.10.2026.xlsx",
-  "updated": "2026-10-26T11:15:20",
+  "updated": "2026-10-26T11:28:33",
   "today": "2026-10-26",
   "invoice_count": 5995,
-  "party_count": 789,
+  "party_count": 1686,
   "excluded_prefix_rows": 975,
-  "mintify_parties": 32,
-  "non_mintify_parties": 757,
+  "mintify_parties": 44,
+  "non_mintify_parties": 1642,
   "total_pending": 174230870.82,
   "salesman_source": "DSR MAPPING OCT26.xlsx",
-  "unassigned_salesman_parties": 248
+  "unassigned_salesman_parties": 453
 }
