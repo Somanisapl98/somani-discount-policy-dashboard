@@ -1,20 +1,20 @@
 {
   "source": "OT DT 24.11.2026.xlsx",
-  "previous_source": "OT DT 23.11.2026.xlsx",
-  "comparison_from": "OT DT 23.11.2026.xlsx",
+  "previous_source": "OT DT 24.11.2026.xlsx",
+  "comparison_from": "OT DT 24.11.2026.xlsx",
   "comparison_to": "OT DT 24.11.2026.xlsx",
-  "updated": "2026-11-24T14:37:41",
+  "updated": "2026-11-24T17:05:23",
   "today": "2026-11-24",
   "invoice_count": 6614,
-  "party_count": 1651,
+  "party_count": 1649,
   "excluded_prefix_rows": 1114,
   "mintify_parties": 29,
-  "non_mintify_parties": 1622,
+  "non_mintify_parties": 1620,
   "total_pending": 182231742.09,
   "total_credit": 25281985.99,
   "net_outstanding": 156949756.1,
   "ignored_small_count": 111,
   "ignored_small_amount": 146.57,
   "salesman_source": "DSR MAPPING OCT26.xlsx",
-  "unassigned_salesman_parties": 413
+  "unassigned_salesman_parties": 412
 }
